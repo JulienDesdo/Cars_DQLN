@@ -19,6 +19,8 @@ def main():
     '''Point d'entrée principal du programme.'''
     # mon_obj = MyClass()
 
+    print("hello world")
+
 
 
 
