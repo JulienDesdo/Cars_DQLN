@@ -14,15 +14,14 @@ class Vehicule:
         self.position = [0,0]
 
     def setSpeed(self,ns:int):
-        """Upgrade variable Speed with a new value"""
-        self.speed = ns
 
+        self.speed = ns
 
     def setOrientation(self,no:int):
         """Upgrade variable Orientation with a new value"""
         self.orientation = no
         
-    def setVision(self,nv:int):
+    def setSpeed(self,nv:int):
         """Upgrade variable Vision with a new value"""
         self.speed = nv
 
@@ -33,6 +32,7 @@ class Vehicule:
     def setPositionX(self):
         """Upgrade variable Y axes Position with a new value"""
         self.position[1] = self.speed + self.position[1]
+
 
 
 
