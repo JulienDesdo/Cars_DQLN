@@ -48,9 +48,24 @@ def main():
     screen = pygame.display.set_mode(carte.get_size())
     clock = pygame.time.Clock()
     running = True
-    car = Vehicule(1,1,0.,[np.linspace(0,np.pi,10)])
-    Rect_car = pygame.Rect(100,540,50,30)
+
+    car_image = pygame.image.load("voiture.png")
+    car_image = pygame.transform.scale(car_image,(30,50))
+    car_image = pygame.transform.rotate(car_image,-90)
+    
+    champ=list(np.linspace(-np.pi/4,np.pi/4,20))
+    car = Vehicule(2,1,champ,[100,540])
+    key_state = {
+        "left":False,
+        "right":False,
+        "up":False,
+        "down":False
+    }
+    
+    
+    Rect_car = car_image.get_rect(center=(100,580))
     Rect_Arrive = pygame.Rect(1100,50,50,50)
+
 
     while running==True:
 
@@ -58,13 +73,54 @@ def main():
             if event.type == pygame.QUIT:
                 running=False
 
-             
+            elif event.type == pygame.KEYUP:
+        
+                if event.key == pygame.K_UP:
+                    key_state["up"] = False
+
+                if event.key == pygame.K_LEFT:
+                    key_state["up"] = False
+                if event.key == pygame.K_RIGHT:
+                    key_state["up"] = False
+            
+            elif event.type == pygame.KEYDOWN:
+        
+                if event.key == pygame.K_UP:
+                    key_state["up"] = True
+
+                if event.key == pygame.K_LEFT:
+                    key_state["up"] = True
+                    angle = car.getOrientation()
+                    car_image = pygame.transform.rotate(car_image,-0.1)
+                    car.setChamp(-0.1)
+                    Rect_car = car_image.get_rect(top=(100,580))
+                    
+                if event.key == pygame.K_RIGHT:
+                    key_state["up"] = True
+                    angle = car.getOrientation()
+                    car_image = pygame.transform.rotate(car_image,0.1)
+                    car.setChamp(0.1)
+                    Rect_car = car_image.get_rect(center=(100,580))
+        
+        if key_state["up"]:
+                    print('appuie !')
+                    car.setMoveAway()
+                    position = car.position
+                    Rect_car.x = position[0]
+                    Rect_car.y = position[1]
+        #elif key_state["left"]:
+            
+        #elif key_state["right"]:
+            
+
+        
+
         screen.fill("brown")
-        pygame.draw.rect(screen,BLEU,Rect_car)
+        screen.blit(car_image,Rect_car)
         pygame.draw.rect(screen,VERT,Rect_Arrive)
 
         pygame.display.flip()
-        clock.tick(60)
+        clock.tick(10)
 
     pygame.quit()
 
