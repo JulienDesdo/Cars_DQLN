@@ -17,6 +17,7 @@ import pygame
 # from module import MyClass
 from vehicule_class import Vehicule
 import numpy as np
+import os
 
 class Carte:
     """Exemple de classe dans module1.py."""
@@ -47,9 +48,15 @@ def main():
     carte = Carte((1280,720))
     screen = pygame.display.set_mode(carte.get_size())
     clock = pygame.time.Clock()
+
+    start_time = pygame.time.get_ticks()  # Temps de départ
+    font = pygame.font.Font(None, 36)
+    finish_time = start_time
+    journal_file = "journal_temps.txt"
+
     running = True
 
-    champ=list(np.linspace(-np.pi/4,np.pi/4,20))
+    champ=list(np.linspace(-np.pi/5,np.pi/5,20))
     car = Vehicule(10,1,champ,[100,540])
     key_state = {
         "left":False,
@@ -83,21 +90,34 @@ def main():
                 if event.key == pygame.K_UP:
                     key_state["up"] = False
             
+                if event.key == pygame.K_LEFT:
+                    key_state["left"] = False
+                    
+                if event.key == pygame.K_RIGHT:
+                    key_state["right"] = False
+
+
             elif event.type == pygame.KEYDOWN:
         
                 if event.key == pygame.K_UP:
                     key_state["up"] = True
 
                 if event.key == pygame.K_LEFT:
-                    angle = car.getOrientation()
-                    #car_image = pygame.transform.rotate(car_image_base,angle+10)
-                    car.setChamp('left')
+                    key_state["left"] = True
                     
                 if event.key == pygame.K_RIGHT:
-                    angle = car.getOrientation()
-                    #car_image = pygame.transform.rotate(car_image_base,angle-10)
-                    car.setChamp('right')
+                    key_state["right"] = True
         
+
+        if key_state["left"]:
+            old_dir = car.getOrientation()
+            car.setChamp('left',old_dir)
+
+        if key_state["right"]:
+            old_dir = car.getOrientation()
+            car.setChamp('right',old_dir)
+
+
         if key_state["up"]:
                     car.setMoveAway()
                     position = car.getPosition()
@@ -106,8 +126,30 @@ def main():
         
         if Rect_Arrive.colliderect(Rect_car):
             lock_RectCar = False
+            finish_time = elapsed_time
+
+            if os.path.exists(journal_file):
+                with open(journal_file, "a") as file:
+                    file.write(f"{elapsed_time}\n")
+                print("Historique des temps :")
+                with open(journal_file, "r") as file:
+                    contenu = file.read()
+                    record_time = [contenu[0:6],contenu[8:13],contenu[15:20],contenu[22:27],contenu[29:33]]
+
+                    print(contenu if contenu else "Aucun temps enregistré.")
+                    
+            else:
+                print(f"Le fichier {journal_file} n'existe pas encore. Il sera créé à la fermeture.")
+                with open(journal_file, "a") as file:
+                    file.write(f"{elapsed_time}\n")
+                print(f"Temps enregistré : {elapsed_time} ms")
+
+
+            running = False
 
         
+        elapsed_time = pygame.time.get_ticks() - start_time
+        elapsed_text = font.render(f"Temps : {elapsed_time} ms", True, (255, 255, 255))
 
         screen.fill("brown")
         
@@ -115,6 +157,7 @@ def main():
 
         if lock_RectCar:
             screen.blit(car_image,Rect_car)
+            screen.blit(elapsed_text, (50, 50))
 
         pygame.display.flip()
         clock.tick(10)

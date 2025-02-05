@@ -12,7 +12,7 @@ class Vehicule:
         self.vision = Champ
         self.position = [position[0],position[1]]
         self.orientation = (Champ[0] + Champ[-1]) / 2
-        self.maniability = np.pi/8
+        self.maniability = np.pi/10
 
     def setSpeed(self,ns:int):
 
@@ -31,27 +31,27 @@ class Vehicule:
         self.position[0] += self.speed * np.cos(self.orientation)
         self.position[1] += self.speed * np.sin(self.orientation)
         
-    def setChamp(self,val:str):
+    def setChamp(self,val:str,old_dir:float):
 
         if val == 'right':
             for i in range(len(self.vision)):
-
-                if self.vision[i]+self.maniability > np.pi :
-                    self.vision[i] += self.maniability - 2 * np.pi
-                else:
-                    self.vision[i] += self.maniability
+                self.vision[i] += self.maniability
+                vec_dir = old_dir + self.maniability
 
         elif val == 'left':
             for i in range(len(self.vision)):
-                if self.vision[i]-self.maniability < -np.pi :
-                    self.vision[i] -= self.maniability + 2 * np.pi
-                else:
-                    self.vision[i] -= self.maniability
+                self.vision[i] -= self.maniability
+                vec_dir = old_dir - self.maniability
+
 
         else:
             print("ERROR! Director of variable change not define")
 
-        vec_dir = (self.vision[0] + self.vision[-1]) / 2
+        #vec_dir = (self.vision[0] + self.vision[-1]) / 2
+
+        if abs(vec_dir-old_dir) > self.maniability:
+            print("Problème de tournage !")
+        
         self.setOrientation(vec_dir)
 
     def getPosition(self):
