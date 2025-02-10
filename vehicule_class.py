@@ -14,7 +14,7 @@ class Vehicule:
         self.friction = 0.05  # Perte de vitesse sur la boue
         self.vision = champ
         self.position = [position[0], position[1]]
-        self.orientation = (champ[0] + champ[-1]) / 2
+        self.orientation = 0  # 🔥 On part avec une orientation à 0 (vers la droite)
         self.maniability = np.pi / 20  # Plus faible pour éviter trop de virages brusques
 
     def accelerate(self):
