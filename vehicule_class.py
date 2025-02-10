@@ -1,64 +1,53 @@
 import numpy as np
 
 class Vehicule:
-    """Class Véhicule qui va manipuler l'ensemble du véhicule."""
+    """Classe qui gère la physique et le mouvement du véhicule."""
 
-    def __init__(self, vit: int,acc: int, Champ:list,position:list):
+    def __init__(self, vit_max: int, acc: float, champ: list, position: list):
         """
-        Initialise l'instance de la classe.
+        Initialise le véhicule.
         """
-        self.speed = vit
-        self.acceleration = acc
-        self.vision = Champ
-        self.position = [position[0],position[1]]
-        self.orientation = (Champ[0] + Champ[-1]) / 2
-        self.maniability = np.pi/10
+        self.speed = 0  # Démarre à l'arrêt
+        self.max_speed = vit_max  # Vitesse max
+        self.acceleration = acc  # Accélération progressive
+        self.deceleration = 0.1  # Décélération naturelle
+        self.friction = 0.05  # Perte de vitesse sur la boue
+        self.vision = champ
+        self.position = [position[0], position[1]]
+        self.orientation = (champ[0] + champ[-1]) / 2
+        self.maniability = np.pi / 20  # Plus faible pour éviter trop de virages brusques
 
-    def setSpeed(self,ns:int):
+    def accelerate(self):
+        """Augmente progressivement la vitesse."""
+        if self.speed < self.max_speed:
+            self.speed += self.acceleration
 
-        self.speed = ns
+    def decelerate(self):
+        """Diminue la vitesse quand on lâche l'accélérateur."""
+        if self.speed > 0:
+            self.speed -= self.deceleration
+        if self.speed < 0:
+            self.speed = 0
 
-    def setOrientation(self,no:float):
-        """Upgrade variable Orientation with a new value"""
-        self.orientation = no
-        
-    def setSpeed(self,nv:int):
-        """Upgrade variable Vision with a new value"""
-        self.speed = nv
+    def apply_friction(self):
+        """Applique un ralentissement si le véhicule est hors route."""
+        if self.speed > 0:
+            self.speed -= self.friction
 
     def setMoveAway(self):
-        """Upgrade variable X axe Position with a new value"""
+        """Déplace le véhicule selon sa vitesse et son orientation."""
         self.position[0] += self.speed * np.cos(self.orientation)
         self.position[1] += self.speed * np.sin(self.orientation)
-        
-    def setChamp(self,val:str,old_dir:float):
 
-        if val == 'right':
-            for i in range(len(self.vision)):
-                self.vision[i] += self.maniability
-                vec_dir = old_dir + self.maniability
-
-        elif val == 'left':
-            for i in range(len(self.vision)):
-                self.vision[i] -= self.maniability
-                vec_dir = old_dir - self.maniability
-
-
-        else:
-            print("ERROR! Director of variable change not define")
-
-        #vec_dir = (self.vision[0] + self.vision[-1]) / 2
-
-        if abs(vec_dir-old_dir) > self.maniability:
-            print("Problème de tournage !")
-        
-        self.setOrientation(vec_dir)
+    def setChamp(self, direction: str):
+        """Modifie l'orientation du véhicule."""
+        if direction == 'right':
+            self.orientation += self.maniability
+        elif direction == 'left':
+            self.orientation -= self.maniability
 
     def getPosition(self):
         return self.position
 
     def getOrientation(self):
         return self.orientation
-
-
-
