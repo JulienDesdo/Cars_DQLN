@@ -1,46 +1,39 @@
 import numpy as np
+import pygame
 
 class Vehicule:
-    """Classe qui gère la physique et le mouvement du véhicule."""
+    """Gestion du véhicule : physique + capteurs."""
 
-    def __init__(self, vit_max: int, acc: float, champ: list, position: list):
-        """
-        Initialise le véhicule.
-        """
-        self.speed = 0  # Démarre à l'arrêt
-        self.max_speed = vit_max  # Vitesse max
-        self.acceleration = acc  # Accélération progressive
-        self.deceleration = 0.1  # Décélération naturelle
-        self.friction = 0.05  # Perte de vitesse sur la boue
-        self.vision = champ
+    def __init__(self, vit_max, acc, position, vision_active=True):
+        self.speed = 0
+        self.max_speed = vit_max
+        self.acceleration = acc
+        self.deceleration = 0.1
+        self.friction = 0.05
         self.position = [position[0], position[1]]
-        self.orientation = 0  # 🔥 On part avec une orientation à 0 (vers la droite)
-        self.maniability = np.pi / 20  # Plus faible pour éviter trop de virages brusques
+        self.orientation = 0  # 0 rad = vers la DROITE
+        self.maniability = np.pi / 20
+        self.vision_active = vision_active
+        self.num_rays = 7
+        self.ray_length = 120
+        self.ray_angles = np.linspace(-np.pi / 4, np.pi / 4, self.num_rays)
 
     def accelerate(self):
-        """Augmente progressivement la vitesse."""
         if self.speed < self.max_speed:
             self.speed += self.acceleration
 
     def decelerate(self):
-        """Diminue la vitesse quand on lâche l'accélérateur."""
         if self.speed > 0:
             self.speed -= self.deceleration
         if self.speed < 0:
             self.speed = 0
 
-    def apply_friction(self):
-        """Applique un ralentissement si le véhicule est hors route."""
-        if self.speed > 0:
-            self.speed -= self.friction
-
     def setMoveAway(self):
-        """Déplace le véhicule selon sa vitesse et son orientation."""
+        """Avance selon la speed + orientation."""
         self.position[0] += self.speed * np.cos(self.orientation)
         self.position[1] += self.speed * np.sin(self.orientation)
 
-    def setChamp(self, direction: str):
-        """Modifie l'orientation du véhicule."""
+    def setChamp(self, direction):
         if direction == 'right':
             self.orientation += self.maniability
         elif direction == 'left':
@@ -51,3 +44,32 @@ class Vehicule:
 
     def getOrientation(self):
         return self.orientation
+
+    def get_vision(self, track):
+        """Retourne les distances détectées par les rayons."""
+        if not self.vision_active:
+            return []
+
+        distances = []
+        for angle_offset in self.ray_angles:
+            angle = self.orientation + angle_offset
+            for dist in range(self.ray_length):
+                x = int(self.position[0] + np.cos(angle) * dist)
+                y = int(self.position[1] + np.sin(angle) * dist)
+                if not track.is_on_road(x, y):
+                    distances.append(dist)
+                    break
+            else:
+                distances.append(self.ray_length)
+        return distances
+
+    def draw_vision(self, screen, track):
+        """Dessine les rayons en rouge."""
+        if not self.vision_active:
+            return
+        for i, angle_offset in enumerate(self.ray_angles):
+            angle = self.orientation + angle_offset
+            distance = self.get_vision(track)[i]
+            end_x = int(self.position[0] + np.cos(angle) * distance)
+            end_y = int(self.position[1] + np.sin(angle) * distance)
+            pygame.draw.line(screen, (255, 0, 0), self.position, (end_x, end_y), 2)
